@@ -1,60 +1,66 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    REGISTRY = "ghcr.io"
-    IMAGE_NAME = "atuan0354/student-management"
-    HELM_REPO = "https://github.com/atuan0354/student-helm.git"
-    HELM_PATH = "student-app"
-  }
-
-  stages {
-    stage("Checkout Source") {
-      steps {
-        checkout scm
-      }
+    environment {
+        GHCR_IMAGE = "ghcr.io/atuan0354/student-management"
+        HELM_REPO  = "https://github.com/atuan0354/student-helm.git"
+        HELM_PATH  = "student-app/values.yaml"
     }
 
-    stage("Build Docker Image") {
-      steps {
-        script {
-          env.TAG = "${BUILD_NUMBER}"
-          sh """
-            docker build -t ${REGISTRY}/${IMAGE_NAME}:${TAG} .
-          """
+    stages {
+        stage("Checkout Source") {
+            steps {
+                checkout scm
+            }
         }
-      }
-    }
 
-    stage("Login & Push GHCR") {
-      steps {
-        withCredentials([string(credentialsId: 'ghcr_token', variable: 'GHCR_TOKEN')]) {
-          sh """
-            echo $GHCR_TOKEN | docker login ${REGISTRY} -u atuan0354 --password-stdin
-            docker push ${REGISTRY}/${IMAGE_NAME}:${TAG}
-          """
+        stage("Build Docker Image") {
+            steps {
+                script {
+                    // build number làm tag
+                    env.IMAGE_TAG = "${BUILD_NUMBER}"
+                }
+                sh """
+                    docker build -t ${GHCR_IMAGE}:${IMAGE_TAG} .
+                """
+            }
         }
-      }
-    }
 
-    stage("Update Helm Values & Push") {
-      steps {
-        withCredentials([string(credentialsId: 'git_token', variable: 'GIT_TOKEN')]) {
-          sh """
-            rm -rf helmrepo
-            git clone https://atuan0354:$GIT_TOKEN@github.com/atuan0354/student-helm.git helmrepo
-            cd helmrepo/${HELM_PATH}
-
-            sed -i "s/tag: .*/tag: \\"${TAG}\\"/g" values.yaml
-
-            git config user.email "ci@jenkins.local"
-            git config user.name "Jenkins CI"
-            git add values.yaml
-            git commit -m "update image tag to ${TAG}" || true
-            git push origin main
-          """
+        stage("Login & Push GHCR") {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'ghcr-creds',
+                                                 usernameVariable: 'GHCR_USER',
+                                                 passwordVariable: 'GHCR_PASS')]) {
+                    sh """
+                        echo \$GHCR_PASS | docker login ghcr.io -u \$GHCR_USER --password-stdin
+                        docker push ${GHCR_IMAGE}:${IMAGE_TAG}
+                    """
+                }
+            }
         }
-      }
+
+        stage("Update Helm Values & Push") {
+            steps {
+                dir("helm-workdir") {
+                    withCredentials([usernamePassword(credentialsId: 'github-creds',
+                                                     usernameVariable: 'GIT_USER',
+                                                     passwordVariable: 'GIT_PASS')]) {
+                        sh """
+                            git clone ${HELM_REPO} .
+                            sed -i 's/^  tag: .*/  tag: "${IMAGE_TAG}"/' ${HELM_PATH}
+
+                            git config user.email "atuan0354@gmail.com"
+                            git config user.name  "Jenkins CI"
+
+                            git add ${HELM_PATH}
+                            git commit -m "update image tag to ${IMAGE_TAG}" || echo "No changes to commit"
+
+                            git remote set-url origin https://\$GIT_USER:\$GIT_PASS@github.com/atuan0354/student-helm.git
+                            git push origin main
+                        """
+                    }
+                }
+            }
+        }
     }
-  }
 }
