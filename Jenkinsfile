@@ -42,6 +42,7 @@ pipeline {
         stage("Update Helm Values & Push") {
             steps {
                 dir("helm-workdir") {
+                    deleteDir() 
                     withCredentials([usernamePassword(credentialsId: 'github-creds',
                                                      usernameVariable: 'GIT_USER',
                                                      passwordVariable: 'GIT_PASS')]) {
