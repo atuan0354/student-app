@@ -31,7 +31,7 @@ $username = htmlspecialchars($_SESSION['username']);
 <body>
 	<div class="container-fluid">
 		<div class="jumbotron text-center">
-			<h1>PHẦN MỀM QUẢN LÝ SIN VIÊN</h1>
+			<h1>PHẦN MỀM QUẢN LÝ SINH VIÊN</h1>
 		</div>
 		<div class="container-fluid">
 			<div id="user_panel" class="row border bg-light border">
