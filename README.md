@@ -26,7 +26,6 @@ Database thiết kế chuẩn 3 (3rd Normal Form), truy vấn + thay đổi dữ
 
 <img width="1025" height="490" alt="image" src="https://github.com/user-attachments/assets/0c8b1985-e650-4408-99b4-97823a417790" 
 
-
 Triển khai hệ thống Student Management System (PHP + MySQL) theo mô hình Kubernetes + HAProxy + Domain + CI/CD GitOps (Jenkins + GHCR + Helm + ArgoCD) + Logging/Monitoring
 1) Mục tiêu Lab
 
