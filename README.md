@@ -21,3 +21,6 @@ Database thiết kế chuẩn 3 (3rd Normal Form), truy vấn + thay đổi dữ
 - Clone project vào thư mục htdocs.
 - Tạo 1 database mới với tên là "qlsv", charset là UTF8, collation là utf8_unicode_ci
 - Import file qlsv.sql vào db vừa tạo.
+
+
+<img width="1025" height="490" alt="image" src="https://github.com/user-attachments/assets/0c8b1985-e650-4408-99b4-97823a417790" />
